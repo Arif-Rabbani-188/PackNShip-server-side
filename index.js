@@ -8,15 +8,13 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 app.use(cors());
 app.use(express.json());
 
-
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
-
+  console.log(`Example app listening on port ${port}`);
+});
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.nxpfiol.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -35,23 +33,60 @@ async function run() {
     // await client.connect();
     const collection = client.db("PickNShip").collection("AllProducts");
 
-    app.get('/products', async (req, res) => {
+    app.get("/products", async (req, res) => {
       const query = {};
       const cursor = collection.find(query);
       const products = await cursor.toArray();
       res.send(products);
     });
 
-    app.get('/products/:id', async (req, res) => {
+    app.get("/myProducts", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const cursor = collection.find(query);
+      const products = await cursor.toArray();
+      res.send(products);
+    });
+
+    app.patch("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedProduct = req.body;
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          image: updatedProduct.image,
+          price: updatedProduct.price,
+          name: updatedProduct.name,
+          brand_name: updatedProduct.brand_name,
+          category: updatedProduct.category,
+          rating: updatedProduct.rating,
+          description: updatedProduct.short_description,
+          main_quantity: updatedProduct.main_quantity,
+          minimum_selling_quantity: updatedProduct.minimum_selling_quantity,
+        },
+      };
+      const result = await collection.updateOne(filter, updateDoc, options);
+      res.send(result);
+    });
+
+    app.get("/products/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const product = await collection
-        .findOne(query);
+      const product = await collection.findOne(query);
       res.send(product);
     });
+
+    app.post("/products", async (req, res) => {
+      const product = req.body;
+      const result = await collection.insertOne(product);
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
