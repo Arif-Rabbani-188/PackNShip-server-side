@@ -32,12 +32,54 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     const collection = client.db("PickNShip").collection("AllProducts");
+    const usersCollection = client.db("PickNShip").collection("users");
 
     app.get("/products", async (req, res) => {
       const query = {};
       const cursor = collection.find(query);
       const products = await cursor.toArray();
       res.send(products);
+    });
+
+    app.get("/users", async (_req, res) => {
+      const query = {};
+      const cursor = usersCollection.find(query);
+      const users = await cursor.toArray();
+      res.send(users);
+    });
+
+    app.get("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: id ? new ObjectId(id) : null };
+      const user = await usersCollection.findOne(query);
+      res.send(user);
+    });
+
+    app.patch("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedUser = req.body;
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          cart : updatedUser.cart,
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc, options);
+      res.send(result);
+    });
+
+    
+
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await usersCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "User already exists" });
+      }
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
     });
 
     app.get("/myProducts", async (req, res) => {
