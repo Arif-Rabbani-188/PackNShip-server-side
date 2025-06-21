@@ -5,9 +5,48 @@ const jwt = require("jsonwebtoken");
 const port = 3000;
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const cookieParser = require("cookie-parser");
 
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:3000", "https://picknship.vercel.app"],
+  credentials: true,
+}));
 app.use(express.json());
+app.use(cookieParser());
+
+const verifyJWT = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ message: "Unauthorized access" });
+  }
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).send({ message: "Unauthorized access" });
+  }
+  // verify token using firebase admin SDK
+
+  // jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+  //   if (err) {
+  //     return res.status(403).send({ message: "Forbidden access" });
+  //   }
+  //   req.decoded = decoded;
+  //   next();
+  // });
+
+
+}
+
+// generate a JWT token for testing purposes
+app.post("/jwt", (req, res) => {
+  const user = req.body;
+  const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: "1h",
+  });
+  res.cookie("accessToken", token, {
+    httpOnly: true,
+    secure: false, // Use secure cookies in production
+  });
+});
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
