@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
+const jwt = require("jsonwebtoken");
 const port = 3000;
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -69,7 +70,13 @@ async function run() {
       res.send(result);
     });
 
-    
+    app.delete("products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await collection.deleteOne(query);
+      res.send(result);
+    }
+    );
 
     app.post("/users", async (req, res) => {
       const user = req.body;
