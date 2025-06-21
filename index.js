@@ -5,7 +5,9 @@ const jwt = require("jsonwebtoken");
 const port = 3000;
 const admin = require("firebase-admin");
 
-var serviceAccount = require("./serviceAccountKey.json");
+const decodedServiceAccount = Buffer.from(process.env.FB_SERVICE_KEY, 'base64').toString('utf-8');
+
+var serviceAccount = JSON.parse(decodedServiceAccount);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -23,7 +25,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-const verifyJWT = (req, res, next) => {
+const verifyJWT = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     return res.status(401).send({ message: "Unauthorized access" });
@@ -34,6 +36,14 @@ const verifyJWT = (req, res, next) => {
   }
   // verify token using firebase admin SDK
 
+  try{
+    const decoded = await admin.auth().verifyIdToken(token);
+    req.tokenEmail = decoded.email;
+    next();
+  }catch (error) {
+    console.error("Error verifying token:", error);
+    return res.status(403).send({ message: "Forbidden access" });
+  }
   // jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
   //   if (err) {
   //     return res.status(403).send({ message: "Forbidden access" });
