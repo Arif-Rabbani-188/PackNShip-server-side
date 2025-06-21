@@ -136,7 +136,7 @@ async function run() {
     }
     );
 
-    app.post("/users", async (req, res) => {
+    app.post("/users", verifyJWT ,async (req, res) => {
       const user = req.body;
       const query = { email: user.email };
       const existingUser = await usersCollection.findOne(query);
