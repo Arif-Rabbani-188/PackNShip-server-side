@@ -18,10 +18,7 @@ const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cookieParser = require("cookie-parser");
 
-app.use(cors({
-  origin: ["http://localhost:3000", "https://picknship.vercel.app"],
-  credentials: true,
-}));
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
@@ -51,7 +48,6 @@ const verifyJWT = async (req, res, next) => {
   //   req.decoded = decoded;
   //   next();
   // });
-
 
 }
 
@@ -136,7 +132,7 @@ async function run() {
     }
     );
 
-    app.post("/users", verifyJWT ,async (req, res) => {
+    app.post("/users" ,async (req, res) => {
       const user = req.body;
       const query = { email: user.email };
       const existingUser = await usersCollection.findOne(query);
