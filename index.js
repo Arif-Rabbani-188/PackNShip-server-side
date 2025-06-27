@@ -38,7 +38,7 @@ const verifyJWT = async (req, res, next) => {
     req.tokenEmail = decoded.email;
     next();
   }catch (error) {
-    console.error("Error verifying token:", error);
+    // console.error("Error verifying token:", error);
     return res.status(403).send({ message: "Forbidden access" });
   }
   // jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
@@ -68,7 +68,7 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  // console.log(`Example app listening on port ${port}`);
 });
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.nxpfiol.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
